@@ -30,3 +30,25 @@ SELECT
   -- Replace whitespace in the film title with an underscore
   REPLACE(title, ' ', '_') AS title
 FROM film; 
+
+-- Determining the length of strings
+-- Select the title and description columns from the film table.
+-- Find the number of characters in the description column with the alias desc_len.
+
+SELECT 
+  -- Select the title and description columns
+  title,
+  description,
+  -- Determine the length of the description column
+  LENGTH(description) AS desc_len
+FROM film;
+
+-- Select the first 50 characters of the description column with the alias short_desc
+SELECT 
+  -- Select the first 50 characters of description
+  LEFT(description, 50) AS short_desc
+FROM 
+  film AS f; 
+
+
+
