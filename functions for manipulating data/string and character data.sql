@@ -69,3 +69,92 @@ SELECT
   -- Extract the characters to the right of the '@'
   SUBSTRING(email FROM POSITION('@' IN email)+1 FOR CHAR_LENGTH(email)) AS domain
 FROM customer;
+
+-- Add a single space to the end or right of the first_name column using a padding function.
+-- Use the || operator to concatenate the padded first_name to the last_name column.
+
+-- Concatenate the padded first_name and last_name 
+SELECT 
+	RPAD(first_name, LENGTH(first_name)+1) || last_name AS full_name
+FROM customer;
+
+-- Now add a single space to the left or beginning of the last_name column using a different padding function than the first step.
+-- Use the || operator to concatenate the first_name column to the padded last_name.
+
+-- Concatenate the first_name and last_name 
+SELECT 
+	first_name || LPAD(last_name, LENGTH(last_name)+1) AS full_name
+FROM customer; 
+
+-- Add a single space to the right or end of the first_name column.
+-- Add the characters < to the right or end of last_name column.
+-- Finally, add the characters > to the right or end of the email column.
+
+-- Concatenate the first_name and last_name 
+SELECT 
+	RPAD(first_name, LENGTH(first_name)+1) 
+    || RPAD(last_name, LENGTH(last_name)+2, ' <') 
+    || RPAD(email, LENGTH(email)+1, '>') AS full_email
+FROM customer; 
+
+-- Convert the film category name to uppercase and use the CONCAT() concatenate it with the title.
+-- Truncate the description to the first 50 characters and make sure there is no leading or trailing whitespace after truncating.
+-- Concatenate the uppercase category name and film title
+SELECT 
+  CONCAT(UPPER(c.name), ': ', f.title) AS film_category, 
+  -- Truncate the description remove trailing whitespace
+  TRIM(LPAD(description, 50)) AS film_desc
+FROM 
+  film AS f 
+  INNER JOIN film_category AS fc 
+  	ON f.film_id = fc.film_id 
+  INNER JOIN category AS c 
+  	ON fc.category_id = c.category_id;
+
+--     Get the first 50 characters of the description column
+-- Determine the position of the last whitespace character of the truncated description column and subtract it from the number 50 as the second parameter in the first function above.
+SELECT 
+  UPPER(c.name) || ': ' || f.title AS film_category, 
+  -- Truncate the description without cutting off a word
+  LEFT(description, 50 - 
+    -- Subtract the position of the first whitespace character
+    POSITION(
+      ' ' IN REVERSE(LEFT(description, 50))
+    )
+  ) 
+FROM 
+  film AS f 
+  INNER JOIN film_category AS fc 
+  	ON f.film_id = fc.film_id 
+  INNER JOIN category AS c 
+  	ON fc.category_id = c.category_id;
+
+-- A review of the LIKE operator
+-- Select all columns
+SELECT *
+FROM film
+-- Select only records that begin with the word 'GOLD'
+WHERE title LIKE 'GOLD%';
+
+-- Now select all records that end with the word GOLD.
+SELECT *
+FROM film
+-- Select only records that end with the word 'GOLD'
+WHERE title LIKE '%GOLD';
+
+-- Finally, select all records that contain the word 'GOLD'.
+SELECT *
+FROM film
+-- Select only records that contain the word 'GOLD'
+WHERE title LIKE '%GOLD%';
+
+-- Select the film description as a tsvector
+SELECT to_tsvector(description)
+FROM film;
+
+-- Select the title and description
+SELECT title, description
+FROM film
+-- Convert the title to a tsvector and match it against the tsquery 
+WHERE to_tsvector(title) @@ to_tsquery('elf');
+
