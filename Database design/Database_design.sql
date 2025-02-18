@@ -61,3 +61,21 @@ ALTER TABLE dim_author ADD COLUMN author_id SERIAL PRIMARY KEY;
 -- Output the new table
 SELECT * FROM dim_author;
 
+
+-- Select state from the appropriate table and the total sales_amount.
+-- Complete the JOIN on book_id.
+-- Complete the JOIN to connect the dim_store_star table
+-- Conditionally select for books with the genre novel.
+-- Group the results by state.
+-- Output each state and their total sales_amount
+SELECT dim_store_star.state, SUM(fact_booksales.sales_amount) AS total_sales
+FROM fact_booksales
+	-- Join to get book information
+    JOIN dim_book_star ON fact_booksales.book_id = dim_book_star.book_id
+	-- Join to get store information
+    JOIN dim_store_star ON fact_booksales.store_id = dim_store_star.store_id
+-- Get all books with in the novel genre
+WHERE  
+    dim_book_star.genre = 'novel'
+-- Group results by state
+GROUP BY dim_store_star.state;
