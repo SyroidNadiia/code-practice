@@ -22,3 +22,36 @@ SELECT name, tag_type.tag, tag_type.type
        ON tag_company.tag = tag_type.tag
   -- Filter to most common type
   WHERE type='cloud';
+
+--   Use coalesce() to select the first non-NULL value from industry, sector, or 'Unknown' as a fallback value.
+-- Alias the result of the call to coalesce() as industry2.
+-- Count the number of rows with each industry2 value.
+-- Find the most common value of industry2.
+-- Use coalesce
+-- Use coalesce
+SELECT coalesce(industry, sector, 'Unknown') AS industry2,
+       -- Don't forget to count!
+       COUNT(*) 
+  FROM fortune500 
+-- Group by what? (What are you counting by?)
+ GROUP BY industry2
+-- Order results to see most common first
+ ORDER BY count DESC
+-- Limit results to get just the one value you want
+ LIMIT 1;
+
+
+--  Select profits_change and profits_change cast as integer from fortune500.
+-- Look at how the values were converted.
+-- Select the original value
+SELECT profits_change, 
+	   -- Cast profits_change
+       CAST(profits_change AS integer) AS profits_change_int
+  FROM fortune500;
+
+  -- Divide 10 by 3
+SELECT 10/3, 
+       -- Cast 10 as numeric and divide by 3
+       10::numeric/3;
+
+       
