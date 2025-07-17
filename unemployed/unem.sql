@@ -217,3 +217,101 @@ where m.m_2014 is not null
 
 
 
+---- Remove redundant columns from the unemployment_rate table to normalize the schema
+alter table unemployment_rate 
+drop column country_name,
+drop column region;
+
+
+---- Create a new lookup table that maps each country to its corresponding region
+create table country_regions (
+	country_name TEXT primary key,
+	region Text
+	);
+
+
+---- Preview the contents of the country_regions table to verify its structure and initial data
+select *
+from country_regions c 
+limit 100;
+
+
+---- Identify countries that are listed in the global_unemployment_data table 
+-- but are not yet assigned to a known region (i.e., region = 'Unknown').
+select 
+	g.country_name
+from global_unemployment_data g 
+join country_regions c 
+on c.country_name = g.country_name
+where c.region = 'Unknown'
+limit 100;
+
+
+-- Update the region of a specific country ('Guinea') from 'Unknown' to 'Africa'.
+update country_regions
+set region = 'Africa'
+where country_name = 'Guinea';
+
+
+-- Calculate the average unemployment rate per region for each year from 2020 to 2024.
+-- This aggregates data across all countries within each region.
+select 
+	c.region 
+	, AVG(g.year_2020) as avg_2020
+	, AVG(g.year_2021) as avg_2021
+	, AVG(g.year_2022) as avg_2022
+	, AVG(g.year_2023) as avg_2023
+	, AVG(g.year_2024) as avg_2024
+from global_unemployment_data g 
+join country_regions c 
+on c.country_name = g.country_name
+group by c.region 
+limit 100;
+
+
+
+-- Calculate the average unemployment rate by both region and gender (sex) 
+-- for each year from 2020 to 2024.
+-- This allows for gender-specific regional analysis.
+SELECT 
+    c.region,
+    g.sex,
+    AVG(g.year_2020) AS avg_2020,
+    AVG(g.year_2021) AS avg_2021,
+    AVG(g.year_2022) AS avg_2022,
+    AVG(g.year_2023) AS avg_2023,
+    AVG(g.year_2024) AS avg_2024
+FROM global_unemployment_data g
+JOIN country_regions c 
+  ON c.country_name = g.country_name
+GROUP BY c.region, g.sex
+ORDER BY c.region, g.sex;
+
+
+--Comparing Global and Kaggle Unemployment Rates
+with changed_global_un as (
+select country_name, '2020' as year, AVG(year_2020) as rate from global_unemployment_data group by country_name
+union
+select country_name, '2021', AVG(year_2021) from global_unemployment_data group by country_name 
+union
+select country_name, '2022', AVG(year_2022) from global_unemployment_data group by country_name 
+union
+select country_name, '2023', AVG(year_2023) from global_unemployment_data group by country_name 
+union
+select country_name, '2024', AVG(year_2024) from global_unemployment_data group by country_name 
+	)
+select 
+	u.entity as country_name
+	, u.year
+	, u.rate as global_avg_rate
+	, c.rate as kaggle_avg_rate
+	, (u.rate - c.rate) as difference
+from unemployment_rate u 
+join changed_global_un c 
+on c.country_name = u.entity
+where 
+	u.year between 2020 and 2024
+	and u.rate is not null 
+	and c.rate is not null
+order by difference  desc
+limit 100;
